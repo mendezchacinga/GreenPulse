@@ -1,0 +1,14 @@
+import { useEffect, useMemo, useState } from "react";
+import AppLayout from "./AppLayout";
+import { Card, StatusBadge, formatDate, formatShift, formatWeight } from "./OperatorUI";
+import "./operator-records.css";
+
+export default function MyRecords() {
+    const [rows, setRows] = useState([]), [error, setError] = useState(""), [filter, setFilter] = useState("all");
+    const onlyPending = new URLSearchParams(window.location.search).get("status") === "pending";
+    useEffect(() => { fetch("/api/operations/losses", { credentials: "include" }).then(async (response) => { const data = await response.json(); if (!response.ok) throw Error(data.message); return data; }).then(setRows).catch((reason) => setError(reason.message)); }, []);
+    const shown = rows.filter((row) => filter === "all" ? (!onlyPending || row.status === "pending") : row.status === filter);
+    const weight = useMemo(() => shown.reduce((sum, row) => sum + Number(row.weight || 0), 0), [shown]);
+    const pending = rows.filter((row) => row.status === "pending").length, validated = rows.filter((row) => ["approved", "corrected"].includes(row.status)).length;
+    return <AppLayout role="operario" active="Mis registros" title="Mis registros" subtitle="Consulta el estado y la validación de tus registros"><div className="records-summary"><Card><span>Registros</span><b>{shown.length}</b><small>registros visibles</small></Card><Card><span>Peso acumulado</span><b>{formatWeight(weight)}</b><small>en el filtro actual</small></Card><Card><span>En revisión</span><b>{pending}</b><small>pendientes de validación</small></Card><Card><span>Validados</span><b>{validated}</b><small>con revisión completada</small></Card></div><Card className="records-history"><div className="records-history-head"><h2>Historial</h2><div className="records-filters">{[["all", "Todos"], ["pending", "Pendientes"], ["approved", "Aprobados"], ["corrected", "Corregidos"], ["rejected", "Rechazados"]].map(([value, label]) => <button key={value} className={filter === value ? "active" : ""} onClick={() => setFilter(value)}>{label}</button>)}</div></div>{error && <p className="records-error">{error}</p>}{shown.length ? <div className="records-table"><div className="records-table-head"><span>Registro</span><span>Turno</span><span>Peso</span><span>Estado</span></div>{shown.map((row) => <article key={row._id}><div><b>{row.wasteType}</b><span>{row.line} · {row.cause}</span><time>{formatDate(row.occurredAt || row.createdAt)}</time></div><span>{formatShift(row.shift)}</span><strong>{formatWeight(row.weight)}</strong><div><StatusBadge status={row.status} />{["rejected", "corrected"].includes(row.status) && row.supervisorNote && <small>{row.supervisorNote}</small>}</div></article>)}</div> : <p className="records-empty">{filter === "pending" ? "No tienes registros pendientes" : "No hay registros para este filtro"}</p>}</Card></AppLayout>;
+}

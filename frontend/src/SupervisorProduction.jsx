@@ -1,0 +1,20 @@
+import { AlertCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import AppLayout from "./AppLayout";
+import { Card, formatTime } from "./OperatorUI";
+import { LINES, SHIFTS } from "./operationConstants";
+import "./supervisor-forms.css";
+
+const today = () => new Date().toISOString().slice(0, 10);
+async function api(path, options = {}) { const response = await fetch(`/api/operations${path}`, { credentials: "include", headers: { "Content-Type": "application/json" }, ...options }); const data = await response.json().catch(() => ({})); if (!response.ok) throw Error(data.message || "No se pudo guardar la producción"); return data; }
+export default function SupervisorProduction() {
+    const [rows, setRows] = useState([]), [form, setForm] = useState({ date: today(), shift: "Mañana", line: "", units: "", observation: "" }), [error, setError] = useState(""), [notice, setNotice] = useState(""), [saving, setSaving] = useState(false);
+    const load = (date = form.date) => api(`/production?date=${date}`).then(setRows).catch((reason) => setError(reason.message));
+    useEffect(() => { load(); }, []);
+    useEffect(() => { if (!notice) return undefined; const timer = setTimeout(() => setNotice(""), 3000); return () => clearTimeout(timer); }, [notice]);
+    const set = (key, value) => setForm((current) => ({ ...current, [key]: value }));
+    const existing = rows.find((row) => row.line === form.line && row.shift === form.shift);
+    async function submit(event) { event.preventDefault(); setError(""); if (!form.line) return setError("Selecciona una línea"); if (!(Number(form.units) > 0) || !Number.isInteger(Number(form.units))) return setError("Escribe las unidades producidas"); setSaving(true); try { await api("/production", { method: "POST", body: JSON.stringify({ ...form, units: Number(form.units) }) }); setNotice(`${existing ? "Producción actualizada" : "Producción guardada"}: ${form.line} · ${form.shift}`); setForm((current) => ({ ...current, units: "", observation: "" })); load(); } catch (reason) { setError(reason.message); } finally { setSaving(false); } }
+    return <AppLayout role="supervisor" active="Producción" title="Producción del turno" subtitle="Registra las unidades producidas para calcular la merma por unidad"><div className="supervisor-form-grid"><Card className="supervisor-form-card"><form onSubmit={submit}><label>Fecha<input type="date" value={form.date} onChange={(event) => { set("date", event.target.value); load(event.target.value); }} /></label><Choice label="Turno" options={SHIFTS} value={form.shift} onChange={(value) => set("shift", value)} segmented /><Choice label="Línea" options={LINES} value={form.line} onChange={(value) => set("line", value)} /><label>Unidades producidas<input inputMode="numeric" type="number" min="1" step="1" value={form.units} onChange={(event) => set("units", event.target.value)} /></label><label>Observación<textarea value={form.observation} onChange={(event) => set("observation", event.target.value)} /></label>{error && <p className="supervisor-form-error" role="alert"><AlertCircle size={17} />{error}</p>}<button className="supervisor-form-primary" disabled={saving}>{saving ? "Guardando…" : existing ? "Editar producción" : "Guardar producción"}</button>{notice && <p className="supervisor-form-notice" role="status">{notice}</p>}</form></Card><Card className="supervisor-day-list"><h2>Producción registrada hoy</h2>{rows.length ? rows.map((row) => <article key={row._id}><div><b>{row.line}</b><small>{row.shift} · {formatTime(row.updatedAt || row.createdAt)}</small></div><strong>{new Intl.NumberFormat("es-CO").format(Number(row.units))}</strong></article>) : <p>Aún no hay producción registrada para esta fecha</p>}</Card></div></AppLayout>;
+}
+function Choice({ label, options, value, onChange, segmented }) { return <fieldset className={`supervisor-choice ${segmented ? "segmented" : ""}`}><legend>{label}</legend><div>{options.map((option) => <button type="button" className={value === option ? "active" : ""} key={option} onClick={() => onChange(option)}>{option}</button>)}</div></fieldset>; }

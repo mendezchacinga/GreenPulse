@@ -1,0 +1,37 @@
+
+
+<%- include("../common/head.ejs") %>
+  <%- include("../common/navbar.ejs") %>
+
+  <section class="flex justify-center  items-center h-full "> 
+    <div class="max-w-md relative flex border border-black  flex-col p-4 rounded-md text-black bg-white px-12 py-6">
+      <div class="text-2xl font-bold mb-2 text-[#1e0e4b] text-center">Bienvenido a <span
+          class="text-emerald-600">GreenPulse</span></div>
+      <div class="text-sm font-normal mb-4 text-center text-[#1e0e4b]">Ingresa a tu cuenta</div>
+      <form class="flex flex-col gap-3" action="/login_process" method="post">
+        <div class="block relative">
+          <label for="email"
+            class="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">Correo electrónico</label>
+          <input type="mail" id="email" name="email" required
+            class="rounded border border-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2  ring-gray-900 outline-0">
+
+        </div>
+        <div class="block relative">
+          <label for="password"
+            class="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">Contraseña</label>
+          <input type="password" id="password" name="password" required
+            class="rounded border border-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0">
+
+        </div>
+       
+        <button type="submit"
+          class="bg-emerald-600 w-max m-auto px-6 py-2 rounded text-white text-sm font-normal">Ingresar</button>
+
+      </form>
+    </div>
+  </section>
+
+    <%- include("../common/footer.ejs") %>
+      </body>
+
+      </html>

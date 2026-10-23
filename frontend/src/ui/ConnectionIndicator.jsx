@@ -1,0 +1,2 @@
+import { useEffect, useState } from "react";
+export default function ConnectionIndicator() { const [online, setOnline] = useState(navigator.onLine); useEffect(() => { const update = () => setOnline(navigator.onLine); addEventListener("online", update); addEventListener("offline", update); return () => { removeEventListener("online", update); removeEventListener("offline", update); }; }, []); return <span className={`gp-connection ${online ? "is-online" : "is-offline"}`}><i/>{online ? "Conectado" : "Sin conexión · se guarda en este equipo"}</span>; }

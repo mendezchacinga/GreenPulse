@@ -1,0 +1,4 @@
+import { BarChart3, ClipboardCheck, ClipboardList, Leaf } from "lucide-react";
+import "./operational-sidebar.css";
+const items = [{ label: "Tablero", href: "/enterprise", icon: BarChart3 }, { label: "Mermas", href: "/operaciones", icon: ClipboardCheck }, { label: "Registros", href: "/mis-registros", icon: ClipboardList }];
+export default function OperationalSidebar({ active, collapsed = false }) { return <aside className={`operational-sidebar ${collapsed ? "is-hidden" : ""}`}><div className="operational-sidebar-brand"><span className="operational-sidebar-mark"><Leaf size={20}/></span><div><b>GreenPulse</b><span>Lácteos Los Andes</span></div></div><nav>{items.map(({ label, href, icon: Icon }) => <a key={label} href={href} className={active === label ? "active" : ""}><Icon size={19}/><span>{label}</span></a>)}</nav></aside>; }

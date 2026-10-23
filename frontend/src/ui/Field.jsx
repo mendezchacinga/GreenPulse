@@ -1,0 +1,1 @@
+export default function Field({ label, error, children, className = "" }) { return <label className={`gp-field ${className}`}><span>{label}</span>{children}{error && <small role="alert">{error}</small>}</label>; }

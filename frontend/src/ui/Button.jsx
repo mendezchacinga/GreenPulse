@@ -1,0 +1,1 @@
+export default function Button({ children, variant = "primary", className = "", ...props }) { return <button className={`gp-button gp-button--${variant} ${className}`} {...props}>{children}</button>; }
